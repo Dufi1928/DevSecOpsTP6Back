@@ -29,11 +29,11 @@ WORKDIR /var/www/html
 # Copier le contenu du répertoire de l'application
 COPY . /var/www/html
 
-# Installer les dépendances Symfony
-RUN composer install
-
 # Définir les permissions des fichiers
 RUN chown -R www-data:www-data /var/www/html
+
+# Installer les dépendances Symfony
+RUN composer install
 
 # Exposer le port 80
 EXPOSE 80
