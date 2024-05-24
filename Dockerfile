@@ -7,7 +7,6 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libicu-dev \
-    php8.1-fpm \
     libpq-dev \
     libonig-dev \
     libzip-dev \
@@ -37,8 +36,7 @@ RUN chown -R www-data:www-data /var/www/html
 RUN composer install --no-dev --optimize-autoloader
 
 # Exposer les ports
-EXPOSE 80 443
+EXPOSE 80
 
 # Démarrer Nginx et PHP-FPM
-CMD ["sh", "-c", "php-fpm8.1 && nginx -g 'daemon off;'"]
-
+CMD ["sh", "-c", "php-fpm && nginx -g 'daemon off;'"]
