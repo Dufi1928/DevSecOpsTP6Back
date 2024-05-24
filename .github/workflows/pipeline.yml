@@ -46,6 +46,6 @@ jobs:
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            docker service update --image ${{ secrets.DOCKER_USERNAME }}/my-app:latest my-service || \
-            docker service create --name my-service --replicas 3 ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+            docker service update --image ${{ secrets.DOCKER_USERNAME }}/devsecopstp6back:latest my-service || \
+            docker service create --name my-service --replicas 3 ${{ secrets.DOCKER_USERNAME }}/devsecopstp6back:latest
           EOF
