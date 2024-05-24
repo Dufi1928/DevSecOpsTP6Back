@@ -1,8 +1,9 @@
-# Utiliser l'image officielle PHP avec Apache
-FROM php:8.1-apache
+# Utiliser l'image officielle PHP FPM
+FROM php:8.1-fpm
 
 # Installer les dépendances système
 RUN apt-get update && apt-get install -y \
+    nginx \
     git \
     unzip \
     libicu-dev \
@@ -15,11 +16,9 @@ RUN apt-get update && apt-get install -y \
 # Installer les extensions PHP
 RUN docker-php-ext-install intl pdo pdo_mysql mbstring zip opcache
 
-# Activer le module mod_rewrite d'Apache
-RUN a2enmod rewrite
-
-# Copier le fichier de configuration Apache personnalisé
-COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+# Configuration de Nginx
+COPY docker/nginx/default.conf /etc/nginx/sites-available/default
+RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 
 # Installer Composer
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
@@ -34,10 +33,10 @@ COPY . /var/www/html
 RUN chown -R www-data:www-data /var/www/html
 
 # Installer les dépendances Symfony
-RUN composer install
+RUN composer install --no-dev --optimize-autoloader
 
-# Exposer le port 80
-EXPOSE 80
+# Exposer les ports
+EXPOSE 80 443
 
-# Démarrer le serveur Apache
-CMD ["apache2-foreground"]
+# Démarrer Nginx et PHP-FPM
+CMD ["sh", "-c", "service php8.1-fpm start && nginx -g 'daemon off;'"]
