@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     libonig-dev \
     libzip-dev \
-    zip
+    zip \
+&& rm -rf /var/lib/apt/lists/*
 
 # Installer les extensions PHP
 RUN docker-php-ext-install intl pdo pdo_mysql mbstring zip opcache
