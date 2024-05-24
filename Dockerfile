@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libicu-dev \
+    php8.1-fpm \
     libpq-dev \
     libonig-dev \
     libzip-dev \
