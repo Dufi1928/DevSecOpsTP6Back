@@ -44,5 +44,5 @@ jobs:
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            docker stack deploy -c /path/to/your/docker-compose.yml devsecopstp6
+            docker stack deploy -c ./docker-compose.yml devsecopstp6
           EOF
