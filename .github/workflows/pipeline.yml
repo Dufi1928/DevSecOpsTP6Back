@@ -44,5 +44,11 @@ jobs:
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            cd /path/to/deployment_directory # Change this to your desired working directory on the server
+            if [ ! -d "DevSecOpsTP6Back" ]; then
+              git clone https://github.com/Dufi1928/DevSecOpsTP6Back.git
+            fi
+            cd DevSecOpsTP6Back
+            git pull origin main
             docker stack deploy -c ./docker-compose.yml devsecopstp6
           EOF
