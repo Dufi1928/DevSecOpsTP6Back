@@ -18,7 +18,7 @@ RUN docker-php-ext-install intl pdo pdo_mysql mbstring zip opcache
 
 # Préparer la configuration de Nginx
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
-RUN rm -f /etc/nginx/sites-enabled/default && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+RUN rm -f /etc/nginx/sites-enabled/default && ln -s /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/
 
 # Installer Composer pour la gestion des dépendances PHP
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
