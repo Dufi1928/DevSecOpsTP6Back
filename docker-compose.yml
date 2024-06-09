@@ -5,14 +5,18 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        ports:
-            - "8000:80"
         volumes:
-            - .:/var/www/html
+            - .:/var/www
         environment:
-            APP_ENV: dev
+            DATABASE_URL: mysql://user:password@db:3306/healthconnect
         depends_on:
-            - db
+            db:
+                condition: service_started
+        healthcheck:
+            test: ["CMD-SHELL", "ss -tlnp | grep 9000 || exit 1"]
+            interval: 10s
+            retries: 3
+            start_period: 10s
 
     db:
         image: mysql:8.0
@@ -36,5 +40,26 @@ services:
         depends_on:
             - db
 
+    nginx:
+        build:
+            context: ./docker/nginx
+            dockerfile: Dockerfile
+        ports:
+            - "8000:80"
+        volumes:
+            - .:/var/www
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf
+        depends_on:
+            - web
+        command: >
+            /bin/bash -c "
+              dockerize -wait tcp://web:9000 -timeout 60s
+              nginx -g 'daemon off;'
+            "
+
 volumes:
     db_data:
+
+networks:
+    app-network:
+        driver: bridge

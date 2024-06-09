@@ -1,42 +1,36 @@
-# Utiliser l'image officielle PHP avec Apache
-FROM php:8.1-apache
+FROM php:8.2-fpm
 
-# Installer les dépendances système
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
     unzip \
-    libicu-dev \
-    libpq-dev \
-    libonig-dev \
     libzip-dev \
+    libpq-dev \
+    iproute2 \
+    procps \
+    default-mysql-client \
+    # Replacing libmysqlclient-dev with libmariadb-dev-compat
+    libmariadb-dev-compat && \
+    docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    pdo_mysql \
     zip
 
-# Installer les extensions PHP
-RUN docker-php-ext-install intl pdo pdo_mysql mbstring zip opcache
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Activer le module mod_rewrite d'Apache
-RUN a2enmod rewrite
+# Copy the Symfony application files into the container
+COPY . /var/www
 
-# Copier le fichier de configuration Apache personnalisé
-COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+# Set the working directory
+WORKDIR /var/www
 
-# Installer Composer
-COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Définir le répertoire de travail
-WORKDIR /var/www/html
+# Install application dependencies without scripts
+RUN composer install --no-interaction --no-scripts
 
-# Copier le contenu du répertoire de l'application
-COPY . /var/www/html
+# Expose port 9000
+EXPOSE 9000
 
-# Définir les permissions des fichiers
-RUN chown -R www-data:www-data /var/www/html
-
-# Installer les dépendances Symfony
-RUN composer install
-
-# Exposer le port 80
-EXPOSE 80
-
-# Démarrer le serveur Apache
-CMD ["apache2-foreground"]
+CMD ["php-fpm"]
