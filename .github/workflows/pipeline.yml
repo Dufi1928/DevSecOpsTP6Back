@@ -6,8 +6,31 @@ on:
       - main
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_mysql
+          tools: phpunit, php-cs-fixer, phpstan
+
+      - name: Check PHP syntax with PHPStan
+        run: phpstan analyse --level max src
+
+      - name: Check PHP coding standards with PHP CS Fixer
+        run: php-cs-fixer fix --diff --dry-run --verbose
+
+      - name: Run PHPUnit Tests
+        run: phpunit --configuration phpunit.xml
+
   build:
     runs-on: ubuntu-latest
+    needs: lint
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -42,7 +65,7 @@ jobs:
 
       - name: Deploy to Docker Swarm
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh -o StrictHostKeyYChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             docker service update --image ${{ secrets.DOCKER_USERNAME }}/devsecopstp6back:latest devsecopstp6back --publish-add 8000:80 || \
             docker service create --name devsecopstp6back --replicas 1 --publish 8000:80 ${{ secrets.DOCKER_USERNAME }}/devsecopstp6back:latest
