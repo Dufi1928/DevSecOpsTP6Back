@@ -25,14 +25,13 @@ jobs:
         run: docker-compose up -d
 
       - name: Run health checks
-        run: docker-compose exec web ss -tlnp | grep 9000 || exit 1
+        run: docker-compose exec -T web ss -tlnp | grep 9000 || exit 1
 
       - name: Push Docker images
         run: |
           docker-compose push web
           docker-compose push nginx
-          docker-compose push db  # Assuming db has a build context which is not usual, remove if not applicable
-
+          docker-compose push db
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-test
