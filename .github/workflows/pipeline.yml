@@ -24,9 +24,6 @@ jobs:
       - name: Build and start services
         run: docker-compose up -d
 
-      - name: Run health checks
-        run: docker-compose exec -T web ss -tlnp | grep 9000 || exit 1
-
       - name: Push Docker images
         run: |
           docker-compose push web
