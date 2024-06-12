@@ -18,6 +18,8 @@ services:
             interval: 10s
             retries: 3
             start_period: 10s
+        networks:
+            - app-network
 
     db:
         image: mysql:8.0
@@ -30,6 +32,8 @@ services:
             - "3306:3306"
         volumes:
             - db_data:/var/lib/mysql
+        networks:
+            - app-network
 
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
@@ -40,6 +44,8 @@ services:
             MYSQL_ROOT_PASSWORD: root
         depends_on:
             - db
+        networks:
+            - app-network
 
     nginx:
         build:
@@ -57,6 +63,8 @@ services:
               dockerize -wait tcp://web:9000 -timeout 60s
               nginx -g 'daemon off;'
             "
+        networks:
+            - app-network
 
 volumes:
     db_data:
