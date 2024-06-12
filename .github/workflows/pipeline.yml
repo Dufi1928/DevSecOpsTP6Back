@@ -6,13 +6,13 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker
         uses: docker/setup-buildx-action@v1
 
       - name: Login to Docker Hub
@@ -21,16 +21,21 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/devsecopstp6back:latest
+      - name: Build and start services
+        run: docker-compose up -d
+
+      - name: Run health checks
+        run: docker-compose exec web ss -tlnp | grep 9000 || exit 1
+
+      - name: Push Docker images
+        run: |
+          docker-compose push web
+          docker-compose push nginx
+          docker-compose push db  # Assuming db has a build context which is not usual, remove if not applicable
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-and-test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -44,6 +49,5 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            docker service update --image ${{ secrets.DOCKER_USERNAME }}/devsecopstp6back:latest devsecopstp6back --publish-add 8000:80 || \
-            docker service create --name devsecopstp6back --replicas 1 --publish 8000:80 ${{ secrets.DOCKER_USERNAME }}/devsecopstp6back:latest
+            docker stack deploy -c docker-compose.yml devsecopstp6back --with-registry-auth
           EOF
