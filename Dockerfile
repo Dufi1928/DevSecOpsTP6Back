@@ -34,3 +34,5 @@ RUN composer install --no-interaction --no-scripts
 EXPOSE 9000
 
 CMD ["php-fpm"]
+
+
